@@ -1,0 +1,9 @@
+{
+    "database": {
+        "user": "root",
+        "password": "ivgMUQE17m2wHtoP",
+        "ip": "127.0.0.1",
+        "port": 3306,
+        "dbname": "server-manager"
+    }
+}
