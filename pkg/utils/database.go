@@ -19,10 +19,11 @@ func ConnectDatabase() {
 	port := viper.GetInt("database.port")
 	dbname := viper.GetString("database.dbname")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, ip, port, dbname)
-	ConnectDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	var err error
+	ConnectDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error("can not connect database: ", err.Error())
 		return
 	}
-	log.Info(ConnectDB)
 }
