@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"server-manager/models"
 	"server-manager/pkg/utils"
+	"strconv"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -34,4 +35,29 @@ func CreateUser(c *gin.Context) {
 
 	// 返回成功信息
 	utils.HandleSuccessResponse(c, http.StatusOK, gin.H{"id": requestData.ID}, "")
+}
+
+// 删除用户
+func DeleteUser(c *gin.Context) {
+	userIdStr := c.Param("userId")
+	if userIdStr == "" {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
+		return
+	}
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "id错误")
+		return
+	}
+
+	deleteUser := models.User{
+		ID: userId,
+	}
+	if err := utils.ConnectDB.Delete(&deleteUser).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "删除用户错误")
+		return
+	}
+
+	// 返回成功信息
+	utils.HandleSuccessResponse(c, http.StatusOK, nil, "删除用户成功")
 }

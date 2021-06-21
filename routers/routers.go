@@ -18,6 +18,7 @@ func InitRouter() *gin.Engine {
 		})
 	})
 	r.POST("/users", v1.CreateUser)
+	r.DELETE("/users/:userId", v1.DeleteUser)
 
 	return r
 }

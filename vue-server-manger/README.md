@@ -1,4 +1,4 @@
-# vue-server-mange
+# vue-server-manger
 
 ## Project setup
 ```
