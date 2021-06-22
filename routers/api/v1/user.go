@@ -61,3 +61,27 @@ func DeleteUser(c *gin.Context) {
 	// 返回成功信息
 	utils.HandleSuccessResponse(c, http.StatusOK, nil, "删除用户成功")
 }
+
+// 查询用户列表
+func GetUsers(c *gin.Context) {
+	users := make([]models.User, 0, 10)
+	if err := utils.ConnectDB.Scopes(utils.Paginate(c)).Find(&users).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
+		return
+	}
+	// 返回成功信息
+	utils.HandleSuccessResponse(c, http.StatusOK, &users, "")
+}
+
+// 查询用户
+func GetUser(c *gin.Context) {
+	userId, _ := strconv.Atoi(c.Param("userId"))
+
+	user := models.User{}
+	if err := utils.ConnectDB.First(&user, userId).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
+		return
+	}
+	// 返回成功信息
+	utils.HandleSuccessResponse(c, http.StatusOK, &user, "")
+}

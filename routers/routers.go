@@ -12,13 +12,10 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	r.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "test",
-		})
-	})
 	r.POST("/users", v1.CreateUser)
 	r.DELETE("/users/:userId", v1.DeleteUser)
+	r.GET("/users", v1.GetUsers)
+	r.GET("/users/:userId", v1.GetUser)
 
 	return r
 }
