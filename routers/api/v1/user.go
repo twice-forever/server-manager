@@ -85,3 +85,26 @@ func GetUser(c *gin.Context) {
 	// 返回成功信息
 	utils.HandleSuccessResponse(c, http.StatusOK, &user, "")
 }
+
+// 更新用户
+func UpdateUsers(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
+		return
+	}
+
+	requestBodyData := &models.User{}
+	if err := c.ShouldBind(&requestBodyData); err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求解析失败")
+		return
+	}
+	requestBodyData.ID = userId
+	if err := utils.ConnectDB.Model(&requestBodyData).Select("username", "real_name", "avatar_url").Updates(&requestBodyData).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
+		return
+	}
+
+	// 返回成功信息
+	utils.HandleSuccessResponse(c, http.StatusOK, nil, "更新成功")
+}

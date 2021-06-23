@@ -12,8 +12,8 @@ type User struct {
 	Password  string         `json:"password"`
 	PWDSalt   string         `json:"pwdSalt"`
 	RealName  string         `json:"realName"`
-	AvatarURL string         `json:"avatar_url"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	AvatarURL string         `json:"avatarUrl"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
