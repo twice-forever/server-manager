@@ -17,3 +17,12 @@ type User struct {
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
+
+type ShowUser struct {
+	ID        int       `json:"id"`
+	Username  string    `json:"username"`
+	RealName  string    `json:"realName"`
+	AvatarURL string    `json:"avatarUrl"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}

@@ -64,21 +64,32 @@ func DeleteUser(c *gin.Context) {
 
 // 查询用户列表
 func GetUsers(c *gin.Context) {
-	users := make([]models.User, 0, 10)
-	if err := utils.ConnectDB.Scopes(utils.Paginate(c)).Find(&users).Error; err != nil {
+	users := make([]models.ShowUser, 0, 10)
+
+	var count int64
+	tempDB := utils.ConnectDB.Scopes(utils.Paginate(c)).Model(models.User{})
+	if err := tempDB.Find(&users).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
+	if err := tempDB.Count(&count).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
+		return
+	}
+
 	// 返回成功信息
-	utils.HandleSuccessResponse(c, http.StatusOK, &users, "")
+	utils.HandleSuccessResponse(c, http.StatusOK, gin.H{
+		"list":  &users,
+		"count": count,
+	}, "")
 }
 
 // 查询用户
 func GetUser(c *gin.Context) {
 	userId, _ := strconv.Atoi(c.Param("userId"))
 
-	user := models.User{}
-	if err := utils.ConnectDB.First(&user, userId).Error; err != nil {
+	user := models.ShowUser{}
+	if err := utils.ConnectDB.Model(models.User{}).First(&user, userId).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
