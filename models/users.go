@@ -26,3 +26,8 @@ type ShowUser struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+type ChangePassword struct {
+	Password    string `json:"password"`
+	NewPassword string `json:"newPassword"`
+}

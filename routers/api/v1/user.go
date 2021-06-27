@@ -119,3 +119,38 @@ func UpdateUsers(c *gin.Context) {
 	// 返回成功信息
 	utils.HandleSuccessResponse(c, http.StatusOK, nil, "更新成功")
 }
+
+// 修改密码
+func ChangePassword(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
+		return
+	}
+
+	requestBodyData := &models.ChangePassword{}
+	if err := c.ShouldBind(&requestBodyData); err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求解析失败")
+		return
+	}
+	databaseData := &models.User{
+		ID: userId,
+	}
+	if err := utils.ConnectDB.First(&databaseData, userId).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
+		return
+	}
+	hashPassword := utils.GeneratHashPWD(requestBodyData.Password, databaseData.PWDSalt)
+	if hashPassword != databaseData.Password {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "密码不正确")
+		return
+	}
+	newHashPassword := utils.GeneratHashPWD(requestBodyData.NewPassword, databaseData.PWDSalt)
+	if err := utils.ConnectDB.Model(&databaseData).Select("password").Updates(map[string]interface{}{"password": newHashPassword}).Error; err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
+		return
+	}
+
+	// 返回成功信息
+	utils.HandleSuccessResponse(c, http.StatusOK, nil, "更新成功")
+}
