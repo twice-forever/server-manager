@@ -39,17 +39,14 @@ func CreateUser(c *gin.Context) {
 
 // 删除用户
 func DeleteUser(c *gin.Context) {
-	userIdStr := c.Param("userId")
-	if userIdStr == "" {
+	// 解析id
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
 		return
 	}
-	userId, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "id错误")
-		return
-	}
 
+	// 删除用户
 	deleteUser := models.User{
 		ID: userId,
 	}
@@ -64,14 +61,17 @@ func DeleteUser(c *gin.Context) {
 
 // 查询用户列表
 func GetUsers(c *gin.Context) {
+	var count int64
 	users := make([]models.ShowUser, 0, 10)
 
-	var count int64
+	// 获取列表
 	tempDB := utils.ConnectDB.Scopes(utils.Paginate(c)).Model(models.User{})
 	if err := tempDB.Find(&users).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
+
+	// 获取总数
 	if err := tempDB.Count(&count).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
@@ -86,7 +86,12 @@ func GetUsers(c *gin.Context) {
 
 // 查询用户
 func GetUser(c *gin.Context) {
-	userId, _ := strconv.Atoi(c.Param("userId"))
+	// 解析id
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
+		return
+	}
 
 	user := models.ShowUser{}
 	if err := utils.ConnectDB.Model(models.User{}).First(&user, userId).Error; err != nil {
@@ -99,18 +104,22 @@ func GetUser(c *gin.Context) {
 
 // 更新用户
 func UpdateUsers(c *gin.Context) {
+	// 解析id
 	userId, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
 		return
 	}
 
+	// 解析请求体
 	requestBodyData := &models.User{}
 	if err := c.ShouldBind(&requestBodyData); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求解析失败")
 		return
 	}
 	requestBodyData.ID = userId
+
+	// 更新数据库
 	if err := utils.ConnectDB.Model(&requestBodyData).Select("username", "real_name", "avatar_url").Updates(&requestBodyData).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
 		return
@@ -122,17 +131,21 @@ func UpdateUsers(c *gin.Context) {
 
 // 修改密码
 func ChangePassword(c *gin.Context) {
+	// 解析id
 	userId, err := strconv.Atoi(c.Param("userId"))
 	if err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无用户id")
 		return
 	}
 
+	// 解析请求体
 	requestBodyData := &models.ChangePassword{}
 	if err := c.ShouldBind(&requestBodyData); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求解析失败")
 		return
 	}
+
+	// 查找用户
 	databaseData := &models.User{
 		ID: userId,
 	}
@@ -140,6 +153,8 @@ func ChangePassword(c *gin.Context) {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
+
+	// 密码对比
 	hashPassword := utils.GeneratHashPWD(requestBodyData.Password, databaseData.PWDSalt)
 	if hashPassword != databaseData.Password {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "密码不正确")
