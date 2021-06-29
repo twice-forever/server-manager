@@ -12,12 +12,15 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	r.POST("/users", v1.CreateUser)
-	r.DELETE("/users/:userId", v1.DeleteUser)
-	r.GET("/users", v1.GetUsers)
-	r.GET("/users/:userId", v1.GetUser)
-	r.PUT("/users/:userId", v1.UpdateUsers)
-	r.PATCH("/users/:userId/password", v1.ChangePassword)
+	v1Group := r.Group("/v1")
+	{
+		v1Group.POST("/users", v1.CreateUser)
+		v1Group.DELETE("/users/:userId", v1.DeleteUser)
+		v1Group.GET("/users", v1.GetUsers)
+		v1Group.GET("/users/:userId", v1.GetUser)
+		v1Group.PUT("/users/:userId", v1.UpdateUsers)
+		v1Group.PATCH("/users/:userId/password", v1.ChangePassword)
+	}
 
 	return r
 }
