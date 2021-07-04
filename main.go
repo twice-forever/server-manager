@@ -1,13 +1,14 @@
 package main
 
 import (
+	"server-manager/pkg/setting"
 	"server-manager/pkg/utils"
 	"server-manager/routers"
 )
 
 func main() {
 	// 读取配置文件
-	utils.ReadConfig()
+	setting.Init()
 
 	// 连接数据库
 	utils.ConnectDatabase()
