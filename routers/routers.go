@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"server-manager/middleware/jwt"
 	"server-manager/routers/api"
 	v1 "server-manager/routers/api/v1"
 
@@ -16,6 +17,7 @@ func InitRouter() *gin.Engine {
 	r.POST("/login", api.Login)
 
 	v1Group := r.Group("/v1")
+	v1Group.Use(jwt.JWTAuthMiddleware())
 	{
 		v1Group.POST("/users", v1.CreateUser)
 		v1Group.DELETE("/users/:userId", v1.DeleteUser)
