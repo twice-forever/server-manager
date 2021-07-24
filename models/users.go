@@ -6,28 +6,55 @@ import (
 	"gorm.io/gorm"
 )
 
+// 用户结构
 type User struct {
-	ID        int            `json:"id"`
-	Username  string         `json:"username"`
-	Password  string         `json:"password"`
-	PWDSalt   string         `json:"pwdSalt"`
-	RealName  string         `json:"realName"`
-	AvatarURL string         `json:"avatarUrl"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
+	ID        int
+	Username  string
+	Password  string `json:"-"`
+	PWDSalt   string `json:"-"`
+	RealName  string
+	AvatarURL string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
-type ShowUser struct {
-	ID        int       `json:"id"`
-	Username  string    `json:"username"`
-	RealName  string    `json:"realName"`
-	AvatarURL string    `json:"avatarUrl"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+// 获取用户
+func (u *User) GetUser() error {
+	if err := DB.Where(&User{Username: u.Username}).First(u).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-type ChangePassword struct {
-	Password    string `json:"password"`
-	NewPassword string `json:"newPassword"`
+// 增加用户
+func (u *User) AddUser() error {
+	if err := DB.Create(u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 删除用户
+func (u *User) DeleteUser() error {
+	if err := DB.Delete(u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 更新用户
+func (u *User) UpdateUser() error {
+	if err := DB.Model(u).Select("username", "real_name", "avatar_url").Updates(u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// 更新密码
+func (u *User) UpdateUserPassword() error {
+	if err := DB.Model(u).Select("password").Updates(u).Error; err != nil {
+		return err
+	}
+	return nil
 }

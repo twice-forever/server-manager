@@ -2,34 +2,21 @@ package api
 
 import (
 	"net/http"
-	"server-manager/models"
 	"server-manager/pkg/utils"
+	"server-manager/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // 登录
 func Login(c *gin.Context) {
-	var requestData models.User
+	var requestData service.UserLoginService
 	if err := c.ShouldBind(&requestData); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求失败，请重试！")
 		return
 	}
-
-	if err := utils.CheckUser(&requestData); err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "登录失败，请重试！")
-		return
-	}
-
-	token, err := utils.GenerateToken(requestData.ID)
-	if err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "登录失败，请重试！")
-		return
-	}
-
-	utils.HandleSuccessResponse(c, http.StatusOK, gin.H{
-		"token": token,
-	}, "")
+	responseData := requestData.Login(c)
+	utils.HandleSuccessResponse(c, http.StatusOK, responseData, "")
 }
 
 // 登出

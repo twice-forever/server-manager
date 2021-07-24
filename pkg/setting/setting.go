@@ -11,7 +11,7 @@ var (
 	JwtSecret string
 )
 
-func Init() {
+func Setup() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")

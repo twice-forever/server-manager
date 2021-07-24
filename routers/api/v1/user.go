@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"server-manager/models"
 	"server-manager/pkg/utils"
+	"server-manager/service"
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
@@ -27,8 +28,8 @@ func CreateUser(c *gin.Context) {
 	// 增加数据到数据库
 	requestData.PWDSalt = utils.GenerateSalt()
 	requestData.Password = utils.GeneratHashPWD(requestData.Password, requestData.PWDSalt)
-	result := utils.ConnectDB.Create(&requestData)
-	if result.Error != nil {
+	err := requestData.AddUser()
+	if err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "增加用户失败，请重试！")
 		return
 	}
@@ -50,7 +51,7 @@ func DeleteUser(c *gin.Context) {
 	deleteUser := models.User{
 		ID: userId,
 	}
-	if err := utils.ConnectDB.Delete(&deleteUser).Error; err != nil {
+	if err := deleteUser.DeleteUser(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "删除用户错误")
 		return
 	}
@@ -62,17 +63,16 @@ func DeleteUser(c *gin.Context) {
 // 查询用户列表
 func GetUsers(c *gin.Context) {
 	var count int64
-	users := make([]models.ShowUser, 0, 10)
 
 	// 获取列表
-	tempDB := utils.ConnectDB.Scopes(utils.Paginate(c)).Model(models.User{})
-	if err := tempDB.Find(&users).Error; err != nil {
+	users, err := service.GetUsers(c)
+	if err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
 
 	// 获取总数
-	if err := tempDB.Count(&count).Error; err != nil {
+	if err := models.DB.Model(&models.User{}).Count(&count).Error; err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
@@ -93,11 +93,14 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	user := models.ShowUser{}
-	if err := utils.ConnectDB.Model(models.User{}).First(&user, userId).Error; err != nil {
+	user := models.User{
+		ID: userId,
+	}
+	if err := user.GetUser(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
+
 	// 返回成功信息
 	utils.HandleSuccessResponse(c, http.StatusOK, &user, "")
 }
@@ -120,7 +123,7 @@ func UpdateUsers(c *gin.Context) {
 	requestBodyData.ID = userId
 
 	// 更新数据库
-	if err := utils.ConnectDB.Model(&requestBodyData).Select("username", "real_name", "avatar_url").Updates(&requestBodyData).Error; err != nil {
+	if err := requestBodyData.UpdateUser(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
 		return
 	}
@@ -139,7 +142,7 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	// 解析请求体
-	requestBodyData := &models.ChangePassword{}
+	requestBodyData := &service.ChangePassword{}
 	if err := c.ShouldBind(&requestBodyData); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "请求解析失败")
 		return
@@ -149,7 +152,7 @@ func ChangePassword(c *gin.Context) {
 	databaseData := &models.User{
 		ID: userId,
 	}
-	if err := utils.ConnectDB.First(&databaseData, userId).Error; err != nil {
+	if err := databaseData.GetUser(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return
 	}
@@ -161,7 +164,8 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 	newHashPassword := utils.GeneratHashPWD(requestBodyData.NewPassword, databaseData.PWDSalt)
-	if err := utils.ConnectDB.Model(&databaseData).Select("password").Updates(map[string]interface{}{"password": newHashPassword}).Error; err != nil {
+	databaseData.Password = newHashPassword
+	if err := databaseData.UpdateUserPassword(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
 		return
 	}
