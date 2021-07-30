@@ -61,6 +61,7 @@ func CheckUser(user *UserLoginService) error {
 	return errors.New("密码不正确")
 }
 
+// 获取用户
 func GetUsers(c *gin.Context) ([]models.User, error) {
 	users := make([]models.User, 0, 10)
 	tempDB := models.DB.Scopes(Paginate(c)).Model(models.User{})

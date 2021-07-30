@@ -11,6 +11,7 @@ var (
 	JwtSecret string
 )
 
+// 读取config
 func Setup() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
@@ -24,6 +25,7 @@ func Setup() {
 	loadApp()
 }
 
+// 加载配置项
 func loadApp() {
 	JwtSecret = viper.GetString("app.jwt-secret")
 }

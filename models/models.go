@@ -11,6 +11,7 @@ import (
 
 var DB *gorm.DB
 
+// 连接数据库
 func Setup() {
 	user := viper.GetString("database.user")
 	password := viper.GetString("database.password")
