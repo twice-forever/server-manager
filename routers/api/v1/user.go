@@ -25,6 +25,12 @@ func CreateUser(c *gin.Context) {
 	valid.Required(requestData.Username, "username").Message("username")
 	valid.Required(requestData.Password, "password").Message("password")
 
+	// 判断用户名重复
+	if err := requestData.GetUser(); err == nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "用户名重复，请重试！")
+		return
+	}
+
 	// 增加数据到数据库
 	requestData.PWDSalt = utils.GenerateSalt()
 	requestData.Password = utils.GeneratHashPWD(requestData.Password, requestData.PWDSalt)
