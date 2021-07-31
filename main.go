@@ -4,6 +4,7 @@ import (
 	"server-manager/models"
 	"server-manager/pkg/setting"
 	"server-manager/routers"
+	"server-manager/service"
 )
 
 func init() {
@@ -12,6 +13,9 @@ func init() {
 
 	// 连接数据库
 	models.Setup()
+
+	// 初始化用户
+	service.CreateAdmin()
 }
 
 func main() {

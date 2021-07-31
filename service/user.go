@@ -19,27 +19,25 @@ type ChangePassword struct {
 // 管理用户登录的服务
 type UserLoginService struct {
 	ID       int
-	Username string `binding:"required,email"`
+	Username string `binding:"required"`
 	Password string `binding:"required,min=4,max=64"`
 	PWDSalt  string
 }
 
 // Login 用户登录函数
-func (service *UserLoginService) Login(c *gin.Context) map[string]interface{} {
+func (service *UserLoginService) Login() (map[string]interface{}, error) {
 	response := map[string]interface{}{}
 	if err := CheckUser(service); err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "登录失败，请重试！")
-		return response
+		return response, err
 	}
 
 	token, err := utils.GenerateToken(service.ID)
 	if err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "登录失败，请重试！")
-		return response
+		return response, err
 	}
 
 	response["token"] = token
-	return response
+	return response, nil
 }
 
 // 查询用户名称和确定密码正确
@@ -54,7 +52,7 @@ func CheckUser(user *UserLoginService) error {
 	}
 
 	hashPassword := utils.GeneratHashPWD(password, checkUser.PWDSalt)
-	if hashPassword == user.Password {
+	if hashPassword == checkUser.Password {
 		return nil
 	}
 
@@ -73,4 +71,31 @@ func GetUsers(c *gin.Context) ([]models.User, error) {
 		return users, err
 	}
 	return users, nil
+}
+
+// 创建admin用户
+func CreateAdmin() {
+	admin := models.User{
+		Username: "admin",
+		RealName: "admin",
+	}
+
+	if err := admin.GetUser(); err == nil {
+		return
+	}
+
+	password := utils.GetRandomString(16)
+	salt := utils.GenerateSalt()
+	hashPassword := utils.GeneratHashPWD(password, salt)
+
+	admin.PWDSalt = salt
+	admin.Password = hashPassword
+
+	if err := admin.AddUser(); err != nil {
+		log.Error("增加admin用户失败：", err.Error())
+		return
+	}
+
+	log.Info("username: admin")
+	log.Info("password: ", password)
 }

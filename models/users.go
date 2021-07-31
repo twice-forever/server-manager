@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -14,9 +12,8 @@ type User struct {
 	PWDSalt   string `json:"-"`
 	RealName  string
 	AvatarURL string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `json:"-"`
+
+	gorm.Model
 }
 
 // 获取用户
