@@ -128,6 +128,12 @@ func UpdateUsers(c *gin.Context) {
 	}
 	requestBodyData.ID = userId
 
+	// 检查重名
+	if err := requestBodyData.GetUser(); err == nil {
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "存在重名用户，请重试！")
+		return
+	}
+
 	// 更新数据库
 	if err := requestBodyData.UpdateUser(); err != nil {
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "无法找到该用户")
