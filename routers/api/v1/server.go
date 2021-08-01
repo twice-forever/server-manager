@@ -15,10 +15,18 @@ func RegisterServer(c *gin.Context) {
 	var requestData service.Server
 	if err := c.ShouldBind(&requestData); err != nil {
 		log.Error("数据解析失败：", err.Error())
+		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "数据解析失败，请重试！")
+		return
+	}
+
+	// 注册服务
+	if err := requestData.RegisterServer(); err != nil {
+		log.Error("服务注册失败：", err.Error())
 		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "服务注册失败，请重试！")
 		return
 	}
 
+	utils.HandleSuccessResponse(c, http.StatusOK, &gin.H{"ID": requestData.ID}, "")
 }
 
 // 删除服务
