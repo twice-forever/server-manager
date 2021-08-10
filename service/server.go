@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 	"server-manager/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
@@ -34,10 +36,37 @@ func (s Server) RegisterServer() error {
 
 	// 写入数据库
 	if err := server.Create(); err != nil {
-		return errors.New("保存数据库失败")
+		return err
 	}
 
 	return nil
+}
+
+func (s Server) Delete() error {
+	server := &models.Server{
+		ID:   s.ID,
+		Name: s.Name,
+		IP:   s.IP,
+		Port: s.Port,
+		Desc: s.Desc,
+	}
+
+	if err := server.Delete(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetServers(c *gin.Context) ([]models.Server, error) {
+	servers := make([]models.Server, 0, 10)
+	tempDB := models.DB.Scopes(Paginate(c)).Model(models.User{})
+	if err := tempDB.Find(&servers).Error; err != nil {
+		return servers, err
+	}
+	if err := tempDB.Find(&servers).Error; err != nil {
+		return servers, err
+	}
+	return servers, nil
 }
 
 // 心跳检测服务

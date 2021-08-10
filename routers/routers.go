@@ -27,9 +27,15 @@ func InitRouter() *gin.Engine {
 		v1Group.PATCH("/users/:userId/password", v1.ChangePassword)
 	}
 
-	serverGroup := r.Group("/server")
+	serverGroup := r.Group("/servers")
 	{
 		serverGroup.POST("/register", v1.RegisterServer)
+		serverGroup.DELETE("/:id", v1.DeleteServer)
+		serverGroup.GET("/", v1.GetServerList)
+		serverGroup.GET("/:id", v1.GetServer)
+		serverGroup.POST("/", v1.UpdateServer)
+		serverGroup.POST("/start/:id", v1.StartServer)
+		serverGroup.POST("/stop/:id", v1.StopServer)
 	}
 
 	return r

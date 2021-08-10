@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"net/http"
 	"server-manager/models"
 	"server-manager/pkg/utils"
 
@@ -67,7 +66,6 @@ func GetUsers(c *gin.Context) ([]models.User, error) {
 		return users, err
 	}
 	if err := tempDB.Find(&users).Error; err != nil {
-		utils.HandleErrorResponse(c, http.StatusInternalServerError, nil, "查询用户错误")
 		return users, err
 	}
 	return users, nil
